@@ -41,4 +41,5 @@ public class FF4jConfig {
 		}
 		return ff4j;
 	}
+
 }
