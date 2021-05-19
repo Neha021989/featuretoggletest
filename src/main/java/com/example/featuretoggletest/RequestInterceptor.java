@@ -18,14 +18,6 @@ public class RequestInterceptor implements HandlerInterceptor {
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
 			throws Exception {
-		System.out.println("here in interceptor" + handler);
-		if (!featureCheck.accountEnabled()) {
-			springUtil.removeExistingBean("accountController");
-
-		} else {
-			springUtil.addNewBean("accountController");
-		}
-
 		return true;
 	}
 

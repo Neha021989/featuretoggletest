@@ -5,8 +5,11 @@ import org.ff4j.audit.repository.InMemoryEventRepository;
 import org.ff4j.core.Feature;
 import org.ff4j.property.store.InMemoryPropertyStore;
 import org.ff4j.store.InMemoryFeatureStore;
+import org.springframework.boot.autoconfigure.web.servlet.DispatcherServletAutoConfiguration;
+import org.springframework.boot.autoconfigure.web.servlet.DispatcherServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.DispatcherServlet;
 
 @Configuration
 public class FF4jConfig {
@@ -16,30 +19,32 @@ public class FF4jConfig {
 	public FF4j getFF4j() {
 		FF4j ff4j = new FF4j();
 
-		/*
-		 * Implementation of each store. Here this is boiler plate as if nothing is
-		 * specified the inmemory is used. Those are really the one that will change
-		 * depending on your technology.
-		 */
 		ff4j.setFeatureStore(new InMemoryFeatureStore());
 		ff4j.setPropertiesStore(new InMemoryPropertyStore());
 		ff4j.setEventRepository(new InMemoryEventRepository());
-
-		// Enabling audit and monitoring, default value is false
 		ff4j.audit(true);
-
-		// When evaluting not existing features, ff4j will create then but disabled
 		ff4j.autoCreate(true);
-
-		// To define RBAC access, the application must have a logged user
-		// ff4j.setAuthManager(...);
-
-		// To define a cacher layer to relax the DB, multiple implementations
-		// ff4j.cache([a cache Manager]);
 		if (!ff4j.exist(ACCOUNT_DATA)) {
 			ff4j.createFeature(new Feature(ACCOUNT_DATA, true));
 		}
 		return ff4j;
 	}
 
+	@Bean
+	public DispatcherServlet dispatcherServlet() {
+		DispatcherServlet dispatcherServlet = new CustomDispatcherServlet();
+		dispatcherServlet.setThreadContextInheritable(true);
+		dispatcherServlet.setThrowExceptionIfNoHandlerFound(true);
+		return dispatcherServlet;
+	}
+
+	@Bean
+	public DispatcherServletRegistrationBean dispatcherServletRegistration() {
+
+		DispatcherServletRegistrationBean registration = new DispatcherServletRegistrationBean(dispatcherServlet(),
+				"/");
+		registration.setLoadOnStartup(0);
+		registration.setName(DispatcherServletAutoConfiguration.DEFAULT_DISPATCHER_SERVLET_BEAN_NAME);
+		return registration;
+	}
 }
